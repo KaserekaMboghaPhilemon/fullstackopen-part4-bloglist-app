@@ -1,0 +1,13 @@
+### Get all blogs
+GET http://localhost:3003/api/blogs
+
+### Add a new blog
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+
+{
+  "title": "Full Stack Open",
+  "author": "University of Helsinki",
+  "url": "https://fullstackopen.com/",
+  "likes": 100
+}
