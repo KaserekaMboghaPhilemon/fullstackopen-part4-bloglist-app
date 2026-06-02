@@ -16,14 +16,14 @@ blogsRouter.get('/', async (request, response, next) => {
 
 
 // POST endpoint to add a new blog
-blogsRouter.post('/', (request, response) => {
-  // Create a new Blog instance from request body
-  const blog = new Blog(request.body)
-
-  // Save the blog to the database
-  blog.save().then(result => {
+blogsRouter.post('/', async (request, response, next) => {
+  try {
+    const blog = new Blog(request.body)
+    const result = await blog.save()
     response.status(201).json(result)
-  })
+  } catch (error) {
+    next(error)
+  }
 })
 
 
