@@ -50,9 +50,36 @@ const favoriteBlog = (blogs) => {
   }
 }
 
+/**
+ * Finds the author with the highest number of blogs.
+ *
+ * @param {Array} blogs - An array of blog objects
+ * @returns {Object|null} Author and blog count, or null for an empty list
+ */
+const mostBlogs = (blogs) => {
+  if (blogs.length === 0) {
+    return null
+  }
+
+  const counts = blogs.reduce((acc, blog) => {
+    acc[blog.author] = (acc[blog.author] || 0) + 1
+    return acc
+  }, {})
+
+  const topAuthor = Object.entries(counts).reduce((best, current) => {
+    return current[1] > best[1] ? current : best
+  })
+
+  return {
+    author: topAuthor[0],
+    blogs: topAuthor[1],
+  }
+}
+
 // Export all helper functions from this file
 module.exports = {
   dummy,
   totalLikes,
   favoriteBlog,
+  mostBlogs,
 }
