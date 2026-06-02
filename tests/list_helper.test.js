@@ -131,3 +131,21 @@ describe('most blogs', () => {
     })
   })
 })
+
+describe('most likes', () => {
+  test('of a list with one blog is that author', () => {
+    const result = listHelper.mostLikes(listWithOneBlog)
+    assert.deepStrictEqual(result, {
+      author: 'Michael Chan',
+      likes: 7,
+    })
+  })
+
+  test('of a bigger list is calculated right', () => {
+    const result = listHelper.mostLikes(listWithManyBlogs)
+    assert.deepStrictEqual(result, {
+      author: 'Edsger W. Dijkstra',
+      likes: 17,
+    })
+  })
+})
