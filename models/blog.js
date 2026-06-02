@@ -11,6 +11,14 @@ const blogSchema = new mongoose.Schema({
   likes: Number,
 })
 
+blogSchema.set('toJSON', {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString()
+    delete returnedObject._id
+    delete returnedObject.__v
+  },
+})
+
 
 // Export the Blog model based on the schema
 module.exports = mongoose.model('Blog', blogSchema)
