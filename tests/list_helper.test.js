@@ -93,3 +93,23 @@ describe('total likes', () => {
     assert.strictEqual(result, 36)
   })
 })
+
+describe('favorite blog', () => {
+  test('of a list with one blog is that same blog', () => {
+    const result = listHelper.favoriteBlog(listWithOneBlog)
+    assert.deepStrictEqual(result, {
+      title: 'React patterns',
+      author: 'Michael Chan',
+      likes: 7,
+    })
+  })
+
+  test('of a bigger list is the blog with most likes', () => {
+    const result = listHelper.favoriteBlog(listWithManyBlogs)
+    assert.deepStrictEqual(result, {
+      title: 'Canonical string reduction',
+      author: 'Edsger W. Dijkstra',
+      likes: 12,
+    })
+  })
+})

@@ -27,8 +27,32 @@ const totalLikes = (blogs) => {
   return blogs.reduce((sum, blog) => sum + (blog.likes || 0), 0)
 }
 
+/**
+ * Finds the blog with the highest number of likes.
+ * Returns only title, author, and likes.
+ *
+ * @param {Array} blogs - An array of blog objects
+ * @returns {Object|null} The favorite blog summary or null for an empty list
+ */
+const favoriteBlog = (blogs) => {
+  if (blogs.length === 0) {
+    return null
+  }
+
+  const favorite = blogs.reduce((best, current) => {
+    return current.likes > best.likes ? current : best
+  })
+
+  return {
+    title: favorite.title,
+    author: favorite.author,
+    likes: favorite.likes,
+  }
+}
+
 // Export all helper functions from this file
 module.exports = {
   dummy,
   totalLikes,
+  favoriteBlog,
 }
