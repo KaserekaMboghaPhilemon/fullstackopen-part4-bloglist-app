@@ -5,10 +5,10 @@ const mongoose = require('mongoose')
 
 // Define the schema for a blog post
 const blogSchema = new mongoose.Schema({
-  title: String,      // Title of the blog post
+  title: String,
   author: String,     // Author's name
-  url: String,        // URL to the blog
-  likes: Number,      // Number of likes
+  url: String,
+  likes: Number,
 })
 
 

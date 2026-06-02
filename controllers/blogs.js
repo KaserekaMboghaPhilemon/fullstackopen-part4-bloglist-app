@@ -5,10 +5,13 @@ const Blog = require('../models/blog')
 
 
 // GET endpoint to fetch all blogs
-blogsRouter.get('/', (request, response) => {
-  Blog.find({}).then(blogs => {
+blogsRouter.get('/', async (request, response, next) => {
+  try {
+    const blogs = await Blog.find({})
     response.json(blogs)
-  })
+  } catch (error) {
+    next(error)
+  }
 })
 
 
