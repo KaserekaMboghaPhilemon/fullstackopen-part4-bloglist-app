@@ -58,6 +58,22 @@ describe('when there are initially some blogs saved', () => {
       const titles = blogsAtEnd.map((blog) => blog.title)
       assert(titles.includes('Async testing in Node.js'))
     })
+
+    test('defaults likes to 0 if likes property is missing', async () => {
+      const newBlog = {
+        title: 'Blog without likes',
+        author: 'Defaults Tester',
+        url: 'https://example.com/no-likes',
+      }
+
+      const response = await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+
+      assert.strictEqual(response.body.likes, 0)
+    })
   })
 })
 
