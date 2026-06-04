@@ -16,6 +16,7 @@ beforeEach(async () => {
 })
 
 describe('when there are initially some blogs saved', () => {
+  // Basic read operations for blog resources.
   test('blogs are returned as json', async () => {
     await api
       .get('/api/blogs')
@@ -33,11 +34,13 @@ describe('when there are initially some blogs saved', () => {
   test('the unique identifier property is named id', async () => {
     const response = await api.get('/api/blogs')
 
+    // API should expose id and hide Mongo-specific _id.
     assert.ok(response.body[0].id)
     assert.strictEqual(response.body[0]._id, undefined)
   })
 
   describe('addition of a new blog', () => {
+    // Creating a full blog should persist it and return 201.
     test('succeeds with valid data', async () => {
       const newBlog = {
         title: 'Async testing in Node.js',
@@ -72,6 +75,7 @@ describe('when there are initially some blogs saved', () => {
         .expect(201)
         .expect('Content-Type', /application\/json/)
 
+      // Missing likes should fall back to schema default.
       assert.strictEqual(response.body.likes, 0)
     })
 
@@ -84,6 +88,7 @@ describe('when there are initially some blogs saved', () => {
 
       await api.post('/api/blogs').send(newBlog).expect(400)
 
+      // Invalid create must not change persisted blog count.
       const blogsAtEnd = await helper.blogsInDb()
       assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
     })
@@ -97,12 +102,14 @@ describe('when there are initially some blogs saved', () => {
 
       await api.post('/api/blogs').send(newBlog).expect(400)
 
+      // Invalid create must not change persisted blog count.
       const blogsAtEnd = await helper.blogsInDb()
       assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
     })
   })
 
   describe('deletion of a blog', () => {
+    // Deleting an existing blog should reduce total count by one.
     test('succeeds with status code 204 if id is valid', async () => {
       const blogsAtStart = await helper.blogsInDb()
       const blogToDelete = blogsAtStart[0]
@@ -112,6 +119,7 @@ describe('when there are initially some blogs saved', () => {
       const blogsAtEnd = await helper.blogsInDb()
       assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length - 1)
 
+      // Ensure the deleted id is no longer present.
       const ids = blogsAtEnd.map((b) => b.id)
       assert(!ids.includes(blogToDelete.id))
     })
@@ -120,6 +128,49 @@ describe('when there are initially some blogs saved', () => {
       const invalidId = '5a3d5da59070081a82a3445'
 
       await api.delete(`/api/blogs/${invalidId}`).expect(400)
+    })
+  })
+
+  describe('updating a blog', () => {
+    // Most updates target likes, so verify likes can be incremented.
+    test('succeeds in updating likes with valid data and id', async () => {
+      const blogsAtStart = await helper.blogsInDb()
+      const blogToUpdate = blogsAtStart[0]
+
+      const updatedData = {
+        ...blogToUpdate,
+        likes: blogToUpdate.likes + 1,
+      }
+
+      const response = await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send(updatedData)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+
+      // Response should reflect the new likes value.
+      assert.strictEqual(response.body.likes, updatedData.likes)
+
+      const blogsAtEnd = await helper.blogsInDb()
+      const updatedBlog = blogsAtEnd.find((blog) => blog.id === blogToUpdate.id)
+      assert(updatedBlog)
+      // Database value must match the requested update.
+      assert.strictEqual(updatedBlog.likes, updatedData.likes)
+    })
+
+    test('fails with status code 400 if id is invalid', async () => {
+      const invalidId = '5a3d5da59070081a82a3445'
+      const updatedData = {
+        title: 'Updated title',
+        author: 'Updated author',
+        url: 'https://example.com/updated',
+        likes: 12,
+      }
+
+      await api
+        .put(`/api/blogs/${invalidId}`)
+        .send(updatedData)
+        .expect(400)
     })
   })
 })
