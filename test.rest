@@ -1,7 +1,7 @@
  ### Get all blogs
 GET http://localhost:3003/api/blogs
 
-### Add a new blog
+### Add a new blog (valid -> 201)
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
 
@@ -10,4 +10,73 @@ Content-Type: application/json
   "author": "University of Helsinki",
   "url": "https://fullstackopen.com/",
   "likes": 100
+}
+
+### Add a new blog without likes (valid -> 201, likes defaults to 0)
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+
+{
+  "title": "Blog without likes",
+  "author": "Defaults Tester",
+  "url": "https://example.com/no-likes"
+}
+
+### Add a new blog missing title (invalid -> 400)
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+
+{
+  "author": "No Title Tester",
+  "url": "https://example.com/no-title",
+  "likes": 2
+}
+
+### Add a new blog missing url (invalid -> 400)
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+
+{
+  "title": "No URL Blog",
+  "author": "No URL Tester",
+  "likes": 3
+}
+
+### Delete a blog by valid id (replace id first -> 204)
+DELETE http://localhost:3003/api/blogs/REPLACE_WITH_VALID_ID
+
+### Delete a blog by malformed id (invalid -> 400)
+DELETE http://localhost:3003/api/blogs/5a3d5da59070081a82a3445
+
+### Update a blog by valid id (replace id first -> 200)
+PUT http://localhost:3003/api/blogs/REPLACE_WITH_VALID_ID
+Content-Type: application/json
+
+{
+  "title": "Updated blog title",
+  "author": "Updated author",
+  "url": "https://example.com/updated-url",
+  "likes": 999
+}
+
+### Update a blog by malformed id (invalid -> 400)
+PUT http://localhost:3003/api/blogs/5a3d5da59070081a82a3445
+Content-Type: application/json
+
+{
+  "title": "Updated blog title",
+  "author": "Updated author",
+  "url": "https://example.com/updated-url",
+  "likes": 10
+}
+
+### Update a blog by valid-format but non-existing id (not found -> 404)
+PUT http://localhost:3003/api/blogs/507f1f77bcf86cd799439011
+Content-Type: application/json
+
+{
+  "title": "Updated blog title",
+  "author": "Updated author",
+  "url": "https://example.com/updated-url",
+  "likes": 10
 }
