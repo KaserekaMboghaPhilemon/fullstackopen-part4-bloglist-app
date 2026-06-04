@@ -27,5 +27,15 @@ blogsRouter.post('/', async (request, response, next) => {
 })
 
 
+// DELETE endpoint to remove a single blog by id
+blogsRouter.delete('/:id', async (request, response, next) => {
+  try {
+    await Blog.findByIdAndDelete(request.params.id)
+    response.status(204).end()
+  } catch (error) {
+    next(error)
+  }
+})
+
 // Export the router to be used in app.js
 module.exports = blogsRouter
