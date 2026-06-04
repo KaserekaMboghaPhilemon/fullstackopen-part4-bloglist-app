@@ -43,13 +43,13 @@ Content-Type: application/json
 }
 
 ### Delete a blog by valid id (replace id first -> 204)
-DELETE http://localhost:3003/api/blogs/REPLACE_WITH_VALID_ID
+DELETE http://localhost:3003/api/blogs/6a21625afd79eaf203c884e3
 
 ### Delete a blog by malformed id (invalid -> 400)
 DELETE http://localhost:3003/api/blogs/5a3d5da59070081a82a3445
 
 ### Update a blog by valid id (replace id first -> 200)
-PUT http://localhost:3003/api/blogs/REPLACE_WITH_VALID_ID
+PUT http://localhost:3003/api/blogs/6a21625afd79eaf203c884e3
 Content-Type: application/json
 
 {
@@ -87,6 +87,76 @@ Content-Type: application/json
 
 {
   "username": "philemon",
-  "name": "philemon kasereka",
+  "name": "",
   "password": "13324655"
+}
+
+### Get all users (valid -> 200)
+GET http://localhost:3003/api/users
+
+### Create a user with missing username (invalid -> 400)
+POST http://localhost:3003/api/users
+Content-Type: application/json
+
+{
+  "name": "No Username",
+  "password": "validpassword"
+}
+
+### Create a user with short username (invalid -> 400)
+POST http://localhost:3003/api/users
+Content-Type: application/json
+
+{
+  "username": "ab",
+  "name": "Short Username",
+  "password": "validpassword"
+}
+
+### Create a user with missing password (invalid -> 400)
+POST http://localhost:3003/api/users
+Content-Type: application/json
+
+{
+  "username": "validuser",
+  "name": "No Password"
+}
+
+### Create a user with short password (invalid -> 400)
+POST http://localhost:3003/api/users
+Content-Type: application/json
+
+{
+  "username": "validuser",
+  "name": "Short Password",
+  "password": "ab"
+}
+
+### Create a duplicate username (invalid -> 400)
+POST http://localhost:3003/api/users
+Content-Type: application/json
+
+{
+  "username": "philemon",
+  "name": "Duplicate User",
+  "password": "validpassword"
+}
+
+### Create a user with short password (invalid -> 400)
+POST http://localhost:3003/api/users
+Content-Type: application/json
+
+{
+  "username": "katembo",
+  "name": "Short Password Test",
+  "password": "15"
+}
+
+### Create a user with missing username (invalid -> 400)
+POST http://localhost:3003/api/users
+Content-Type: application/json
+
+{
+  "name": "No Username",
+  "password": "validpassword"
 }

@@ -207,6 +207,99 @@ describe('when there is initially one user in db', () => {
     assert(usernames.includes('mluukkai'))
   })
 
+  test('creation fails with status code 400 if username is missing', async () => {
+    const newUser = {
+      name: 'No Username',
+      password: 'validpassword',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    assert.strictEqual(result.body.error, 'username is required')
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, 1)
+  })
+
+  test('creation fails with status code 400 if username is too short', async () => {
+    const newUser = {
+      username: 'ab',
+      name: 'Short Username',
+      password: 'validpassword',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    assert.strictEqual(result.body.error, 'username must be at least 3 characters long')
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, 1)
+  })
+
+  test('creation fails with status code 400 if password is missing', async () => {
+    const newUser = {
+      username: 'validuser',
+      name: 'No Password',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    assert.strictEqual(result.body.error, 'password is required')
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, 1)
+  })
+
+  test('creation fails with status code 400 if password is too short', async () => {
+    const newUser = {
+      username: 'validuser',
+      name: 'Short Password',
+      password: 'ab',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    assert.strictEqual(result.body.error, 'password must be at least 3 characters long')
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, 1)
+  })
+
+  test('creation fails with status code 400 if username is not unique', async () => {
+    const newUser = {
+      username: 'root',
+      name: 'Duplicate User',
+      password: 'validpassword',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    assert.match(result.body.error, /unique/)
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, 1)
+  })
+
   test('all users are returned as json without passwordHash field', async () => {
     const response = await api
       .get('/api/users')
