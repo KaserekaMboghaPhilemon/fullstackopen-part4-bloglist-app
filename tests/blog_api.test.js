@@ -2,8 +2,10 @@ const { test, after, beforeEach, describe } = require('node:test')
 const assert = require('node:assert')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
+const bcrypt = require('bcryptjs')
 const app = require('../app')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const helper = require('./test_helper')
 
 // Supertest wraps the Express app so we can call routes directly in tests.
@@ -172,6 +174,48 @@ describe('when there are initially some blogs saved', () => {
         .send(updatedData)
         .expect(400)
     })
+  })
+})
+
+describe('when there is initially one user in db', () => {
+  beforeEach(async () => {
+    await User.deleteMany({})
+
+    // Seed one known user so create/list operations can be validated.
+    const passwordHash = await bcrypt.hash('sekret', 10)
+    const user = new User({ username: 'root', name: 'Superuser', passwordHash })
+    await user.save()
+  })
+
+  test('creation succeeds with a fresh username', async () => {
+    const newUser = {
+      username: 'mluukkai',
+      name: 'Matti Luukkainen',
+      password: 'salainen',
+    }
+
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, 2)
+
+    const usernames = usersAtEnd.map((u) => u.username)
+    assert(usernames.includes('mluukkai'))
+  })
+
+  test('all users are returned as json without passwordHash field', async () => {
+    const response = await api
+      .get('/api/users')
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    assert.strictEqual(response.body.length, 1)
+    assert.strictEqual(response.body[0].passwordHash, undefined)
+    assert.strictEqual(response.body[0].username, 'root')
   })
 })
 

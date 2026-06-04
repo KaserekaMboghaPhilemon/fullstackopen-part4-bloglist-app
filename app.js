@@ -6,6 +6,7 @@ const config = require('./utils/config')
 const logger = require('./utils/logger')
 const middleware = require('./utils/middleware')
 const blogsRouter = require('./controllers/blogs')
+const usersRouter = require('./controllers/users')
 
 
 // Create an Express application
@@ -33,6 +34,9 @@ app.use(middleware.requestLogger)
 
 // Register the blogs API router
 app.use('/api/blogs', blogsRouter)
+
+// Register the users API router
+app.use('/api/users', usersRouter)
 
 // Middleware for handling unknown endpoints and errors
 app.use(middleware.unknownEndpoint)

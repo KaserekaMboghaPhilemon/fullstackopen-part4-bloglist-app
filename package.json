@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "dotenv": "^16.6.1",
     "express": "^4.22.2",
     "mongoose": "^7.8.9"

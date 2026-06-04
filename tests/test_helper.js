@@ -1,4 +1,5 @@
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 // Shared seed blogs for API integration tests.
 const initialBlogs = [
@@ -22,7 +23,14 @@ const blogsInDb = async () => {
   return blogs.map((blog) => blog.toJSON())
 }
 
+const usersInDb = async () => {
+  // Return users as plain objects for straightforward assertions.
+  const users = await User.find({})
+  return users.map((user) => user.toJSON())
+}
+
 module.exports = {
   initialBlogs,
   blogsInDb,
+  usersInDb,
 }

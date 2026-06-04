@@ -80,3 +80,13 @@ Content-Type: application/json
   "url": "https://example.com/updated-url",
   "likes": 10
 }
+
+### Create a new user (valid -> 201)
+POST http://localhost:3003/api/users
+Content-Type: application/json
+
+{
+  "username": "philemon",
+  "name": "philemon kasereka",
+  "password": "13324655"
+}
