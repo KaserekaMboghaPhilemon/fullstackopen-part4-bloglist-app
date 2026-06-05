@@ -34,6 +34,7 @@ app.use(express.static('dist'))
 // Parse incoming request bodies before route handlers run.
 app.use(express.json())
 app.use(middleware.requestLogger)
+// Extract token before routers so protected routes can verify request.token.
 app.use(middleware.tokenExtractor)
 
 // Register the blogs API router
@@ -43,6 +44,7 @@ app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
 
 // Register the login API router
+// Clients use this endpoint to exchange username/password for a JWT.
 app.use('/api/login', loginRouter)
 
 // Error-related middleware is registered last so it can catch route failures.

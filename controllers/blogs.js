@@ -10,7 +10,7 @@ const config = require('../utils/config')
 // GET endpoint to fetch all blogs
 blogsRouter.get('/', async (request, response, next) => {
   try {
-    // Populate user field so each blog shows its creator's id, username and name.
+    // Populate creator fields so API clients receive blog + creator info in one response.
     const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
     response.json(blogs)
   } catch (error) {
@@ -22,16 +22,18 @@ blogsRouter.get('/', async (request, response, next) => {
 // POST endpoint to add a new blog
 blogsRouter.post('/', async (request, response, next) => {
   try {
+    // Blog creation is protected: request must carry a Bearer token.
     if (!request.token) {
       return response.status(401).json({ error: 'token missing or invalid' })
     }
 
+    // Verify token signature and extract creator id from payload.
     const decodedToken = jwt.verify(request.token, config.SECRET)
     if (!decodedToken.id) {
       return response.status(401).json({ error: 'token missing or invalid' })
     }
 
-    // Assign blog creator from authenticated token user.
+    // Resolve the authenticated user so the blog is tied to the token owner.
     const user = await User.findById(decodedToken.id)
     if (!user) {
       return response.status(401).json({ error: 'token missing or invalid' })
@@ -41,7 +43,7 @@ blogsRouter.post('/', async (request, response, next) => {
     const blog = new Blog({ ...request.body, user: user._id })
     const result = await blog.save()
 
-    // Add this blog to the user's blogs list.
+    // Maintain reverse relation: user document tracks blogs it created.
     user.blogs = user.blogs.concat(result._id)
     await user.save()
 
@@ -55,7 +57,7 @@ blogsRouter.post('/', async (request, response, next) => {
 // DELETE endpoint to remove a single blog by id
 blogsRouter.delete('/:id', async (request, response, next) => {
   try {
-    // Deleting a missing id is still treated as a successful no-content delete.
+    // Current behavior treats delete as idempotent and returns 204 for missing documents.
     await Blog.findByIdAndDelete(request.params.id)
     response.status(204).end()
   } catch (error) {
@@ -74,7 +76,7 @@ blogsRouter.put('/:id', async (request, response, next) => {
       likes: request.body.likes,
     }
 
-    // Return the updated document and keep validators enabled on updates.
+    // Return updated document and enforce schema validators during update.
     const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, {
       new: true,
       runValidators: true,

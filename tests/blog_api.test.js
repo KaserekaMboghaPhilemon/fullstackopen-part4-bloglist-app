@@ -95,6 +95,27 @@ describe('when there are initially some blogs saved', () => {
       assert.strictEqual(response.body.likes, 0)
     })
 
+    test('assigns token user as blog creator', async () => {
+      const usersAtStart = await helper.usersInDb()
+      const tokenUser = usersAtStart[0]
+      const newBlog = {
+        title: 'Creator from token',
+        author: 'Auth Bound',
+        url: 'https://example.com/token-creator',
+        likes: 2,
+      }
+
+      const response = await api
+        .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
+        .send(newBlog)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+
+      // Created blog should reference the authenticated user id from token.
+      assert.strictEqual(response.body.user, tokenUser.id)
+    })
+
     test('fails with status code 400 if title is missing', async () => {
       const newBlog = {
         author: 'No Title Tester',

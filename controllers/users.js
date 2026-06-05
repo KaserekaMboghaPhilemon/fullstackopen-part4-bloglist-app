@@ -5,7 +5,7 @@ const User = require('../models/user')
 // List all users through the API-safe JSON transform from the model.
 usersRouter.get('/', async (request, response, next) => {
   try {
-    // Populate blogs array so each user shows the title and url of their blogs.
+    // Populate blog refs so each user response includes their created blog summaries.
     const users = await User.find({}).populate('blogs', { title: 1, url: 1 })
     response.json(users)
   } catch (error) {
@@ -17,7 +17,7 @@ usersRouter.post('/', async (request, response, next) => {
   try {
     const { username, name, password } = request.body
 
-    // Password rules are checked here because plaintext passwords are not stored in MongoDB.
+    // Validate plaintext password before hashing; passwordHash validation cannot do this.
     if (!username) {
       return response.status(400).json({ error: 'username is required' })
     }
@@ -34,7 +34,7 @@ usersRouter.post('/', async (request, response, next) => {
       return response.status(400).json({ error: 'password must be at least 3 characters long' })
     }
 
-    // Hash password before saving so plaintext credentials never hit the DB.
+    // Hash password before saving so plaintext credentials never hit the database.
     const saltRounds = 10
     const passwordHash = await bcrypt.hash(password, saltRounds)
 

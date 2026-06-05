@@ -3,6 +3,7 @@ const assert = require('node:assert')
 
 const average = require('../utils/for_testing').average
 
+// Verify average behavior for edge case, normal list, and empty list.
 describe('average', () => {
   test('of one value is the value itself', () => {
     assert.strictEqual(average([1]), 1)
