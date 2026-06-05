@@ -37,8 +37,9 @@ app.use(middleware.requestLogger)
 // Extract token before routers so protected routes can verify request.token.
 app.use(middleware.tokenExtractor)
 
-// Register the blogs API router
-app.use('/api/blogs', blogsRouter)
+// Register the blogs API router - userExtractor runs only for /api/blogs routes
+// so GET /api/blogs works without a token (user will be null for public reads).
+app.use('/api/blogs', middleware.userExtractor, blogsRouter)
 
 // Register the users API router
 app.use('/api/users', usersRouter)

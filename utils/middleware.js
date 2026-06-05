@@ -1,3 +1,6 @@
+const jwt = require('jsonwebtoken')
+const User = require('../models/user')
+const config = require('./config')
 const logger = require('./logger')
 
 const requestLogger = (request, response, next) => {
@@ -23,6 +26,26 @@ const tokenExtractor = (request, response, next) => {
   next()
 }
 
+const userExtractor = async (request, response, next) => {
+  // Only resolve user when a token is present; routes that require a user
+  // will return 401 themselves if request.user ends up null.
+  if (!request.token) {
+    request.user = null
+    return next()
+  }
+
+  try {
+    // Decode token to get user id, then fetch the full user document.
+    const decodedToken = jwt.verify(request.token, config.SECRET)
+    request.user = await User.findById(decodedToken.id)
+  } catch {
+    // Invalid/expired token - let the route handler or errorHandler respond.
+    request.user = null
+  }
+
+  next()
+}
+
 const errorHandler = (error, request, response, next) => {
   logger.error(error.message)
 
@@ -43,6 +66,7 @@ const errorHandler = (error, request, response, next) => {
 module.exports = {
   requestLogger,
   tokenExtractor,
+  userExtractor,
   unknownEndpoint,
   errorHandler
 }

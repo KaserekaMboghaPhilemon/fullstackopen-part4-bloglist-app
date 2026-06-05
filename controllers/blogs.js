@@ -1,10 +1,8 @@
 
-// Import Express router, Blog model, and User model
+// Import Express router and Blog model.
+// User resolution is handled by userExtractor middleware, so no direct import needed.
 const blogsRouter = require('express').Router()
-const jwt = require('jsonwebtoken')
 const Blog = require('../models/blog')
-const User = require('../models/user')
-const config = require('../utils/config')
 
 
 // GET endpoint to fetch all blogs
@@ -19,22 +17,11 @@ blogsRouter.get('/', async (request, response, next) => {
 })
 
 
-// POST endpoint to add a new blog
+// POST endpoint to add a new blog (protected: requires valid token via userExtractor)
 blogsRouter.post('/', async (request, response, next) => {
   try {
-    // Blog creation is protected: request must carry a Bearer token.
-    if (!request.token) {
-      return response.status(401).json({ error: 'token missing or invalid' })
-    }
-
-    // Verify token signature and extract creator id from payload.
-    const decodedToken = jwt.verify(request.token, config.SECRET)
-    if (!decodedToken.id) {
-      return response.status(401).json({ error: 'token missing or invalid' })
-    }
-
-    // Resolve the authenticated user so the blog is tied to the token owner.
-    const user = await User.findById(decodedToken.id)
+    // userExtractor populates request.user from the Bearer token; null means no/invalid token.
+    const user = request.user
     if (!user) {
       return response.status(401).json({ error: 'token missing or invalid' })
     }
@@ -54,17 +41,12 @@ blogsRouter.post('/', async (request, response, next) => {
 })
 
 
-// DELETE endpoint to remove a single blog by id
+// DELETE endpoint to remove a single blog by id (protected: requires token + ownership)
 blogsRouter.delete('/:id', async (request, response, next) => {
   try {
-    // Blog deletion is protected: only the blog creator can delete it.
-    if (!request.token) {
-      return response.status(401).json({ error: 'token missing or invalid' })
-    }
-
-    // Verify token signature and extract user id from payload.
-    const decodedToken = jwt.verify(request.token, config.SECRET)
-    if (!decodedToken.id) {
+    // userExtractor populates request.user; null means no/invalid token.
+    const user = request.user
+    if (!user) {
       return response.status(401).json({ error: 'token missing or invalid' })
     }
 
@@ -74,8 +56,8 @@ blogsRouter.delete('/:id', async (request, response, next) => {
       return response.status(404).end()
     }
 
-    // Compare blog creator with authenticated user (convert IDs to strings for comparison).
-    if (blog.user.toString() !== decodedToken.id.toString()) {
+    // Convert both IDs to strings before comparing (Mongoose ObjectId vs string).
+    if (blog.user.toString() !== user._id.toString()) {
       return response.status(403).json({ error: 'unauthorized to delete this blog' })
     }
 
