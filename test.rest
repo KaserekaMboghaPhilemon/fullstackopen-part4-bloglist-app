@@ -160,3 +160,6 @@ Content-Type: application/json
   "name": "No Username",
   "password": "validpassword"
 }
+
+### Get all blogs to verify changes
+GET http://localhost:3003/api/blogs
