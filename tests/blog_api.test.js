@@ -26,7 +26,11 @@ beforeEach(async () => {
     .send({ username: 'root', password: 'sekret' })
 
   token = loginResponse.body.token
-  await Blog.insertMany(helper.initialBlogs)
+
+  // Create initial blogs with the authenticated user so they have an owner for deletion tests.
+  for (const blog of helper.initialBlogs) {
+    await api.post('/api/blogs').set('Authorization', `Bearer ${token}`).send(blog)
+  }
 })
 
 describe('when there are initially some blogs saved', () => {
@@ -170,24 +174,65 @@ describe('when there are initially some blogs saved', () => {
 
   describe('deletion of a blog', () => {
     // Deleting an existing blog should reduce total count by one.
-    test('succeeds with status code 204 if id is valid', async () => {
+    test('succeeds with status code 204 if id is valid and user is creator', async () => {
       const blogsAtStart = await helper.blogsInDb()
       const blogToDelete = blogsAtStart[0]
 
-      await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+      await api
+        .delete(`/api/blogs/${blogToDelete.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(204)
 
       const blogsAtEnd = await helper.blogsInDb()
-      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length - 1)
+      assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
 
       // Ensure the deleted id is no longer present.
       const ids = blogsAtEnd.map((b) => b.id)
       assert(!ids.includes(blogToDelete.id))
     })
 
+    test('fails with status code 401 if token is missing', async () => {
+      const blogsAtStart = await helper.blogsInDb()
+      const blogToDelete = blogsAtStart[0]
+
+      await api.delete(`/api/blogs/${blogToDelete.id}`).expect(401)
+
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
+    })
+
+    test('fails with status code 403 if user is not the blog creator', async () => {
+      // Create a second user
+      const passwordHash = await bcrypt.hash('password', 10)
+      const otherUser = new User({ username: 'other', name: 'Other User', passwordHash })
+      await otherUser.save()
+
+      // Log in as the second user and get their token
+      const loginResponse = await api
+        .post('/api/login')
+        .send({ username: 'other', password: 'password' })
+
+      const otherUserToken = loginResponse.body.token
+
+      const blogsAtStart = await helper.blogsInDb()
+      const blogToDelete = blogsAtStart[0]
+
+      await api
+        .delete(`/api/blogs/${blogToDelete.id}`)
+        .set('Authorization', `Bearer ${otherUserToken}`)
+        .expect(403)
+
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
+    })
+
     test('fails with status code 400 if id is invalid', async () => {
       const invalidId = '5a3d5da59070081a82a3445'
 
-      await api.delete(`/api/blogs/${invalidId}`).expect(400)
+      await api
+        .delete(`/api/blogs/${invalidId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(400)
     })
   })
 

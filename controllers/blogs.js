@@ -57,7 +57,29 @@ blogsRouter.post('/', async (request, response, next) => {
 // DELETE endpoint to remove a single blog by id
 blogsRouter.delete('/:id', async (request, response, next) => {
   try {
-    // Current behavior treats delete as idempotent and returns 204 for missing documents.
+    // Blog deletion is protected: only the blog creator can delete it.
+    if (!request.token) {
+      return response.status(401).json({ error: 'token missing or invalid' })
+    }
+
+    // Verify token signature and extract user id from payload.
+    const decodedToken = jwt.verify(request.token, config.SECRET)
+    if (!decodedToken.id) {
+      return response.status(401).json({ error: 'token missing or invalid' })
+    }
+
+    // Fetch the blog to verify the token user is the creator.
+    const blog = await Blog.findById(request.params.id)
+    if (!blog) {
+      return response.status(404).end()
+    }
+
+    // Compare blog creator with authenticated user (convert IDs to strings for comparison).
+    if (blog.user.toString() !== decodedToken.id.toString()) {
+      return response.status(403).json({ error: 'unauthorized to delete this blog' })
+    }
+
+    // Delete is authorized, remove the blog document.
     await Blog.findByIdAndDelete(request.params.id)
     response.status(204).end()
   } catch (error) {
