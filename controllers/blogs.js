@@ -1,14 +1,15 @@
 
-// Import Express router and Blog model
+// Import Express router, Blog model, and User model
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 
 // GET endpoint to fetch all blogs
 blogsRouter.get('/', async (request, response, next) => {
   try {
-    // Return every blog document as JSON.
-    const blogs = await Blog.find({})
+    // Populate user field so each blog shows its creator's id, username and name.
+    const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
     response.json(blogs)
   } catch (error) {
     next(error)
@@ -19,9 +20,17 @@ blogsRouter.get('/', async (request, response, next) => {
 // POST endpoint to add a new blog
 blogsRouter.post('/', async (request, response, next) => {
   try {
+    // Assign the first available user as creator until auth is implemented.
+    const user = await User.findOne({})
+
     // Build a model instance so schema defaults and validation are applied.
-    const blog = new Blog(request.body)
+    const blog = new Blog({ ...request.body, user: user._id })
     const result = await blog.save()
+
+    // Add this blog to the user's blogs list.
+    user.blogs = user.blogs.concat(result._id)
+    await user.save()
+
     response.status(201).json(result)
   } catch (error) {
     next(error)

@@ -5,8 +5,8 @@ const User = require('../models/user')
 // List all users through the API-safe JSON transform from the model.
 usersRouter.get('/', async (request, response, next) => {
   try {
-    // Return all users without password hashes.
-    const users = await User.find({})
+    // Populate blogs array so each user shows the title and url of their blogs.
+    const users = await User.find({}).populate('blogs', { title: 1, url: 1 })
     response.json(users)
   } catch (error) {
     next(error)

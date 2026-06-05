@@ -10,6 +10,13 @@ const userSchema = new mongoose.Schema({
   },
   name: String,
   passwordHash: String,
+  // References to blogs created by this user.
+  blogs: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Blog',
+    },
+  ],
 })
 
 userSchema.set('toJSON', {
