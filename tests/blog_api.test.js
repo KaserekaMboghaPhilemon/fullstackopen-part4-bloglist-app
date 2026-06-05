@@ -10,10 +10,22 @@ const helper = require('./test_helper')
 
 // Supertest wraps the Express app so we can call routes directly in tests.
 const api = supertest(app)
+let token
 
 beforeEach(async () => {
   // Reset the collection so every test starts from the same known state.
   await Blog.deleteMany({})
+  await User.deleteMany({})
+
+  const passwordHash = await bcrypt.hash('sekret', 10)
+  const user = new User({ username: 'root', name: 'Superuser', passwordHash })
+  await user.save()
+
+  const loginResponse = await api
+    .post('/api/login')
+    .send({ username: 'root', password: 'sekret' })
+
+  token = loginResponse.body.token
   await Blog.insertMany(helper.initialBlogs)
 })
 
@@ -53,6 +65,7 @@ describe('when there are initially some blogs saved', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(201)
         .expect('Content-Type', /application\/json/)
@@ -73,6 +86,7 @@ describe('when there are initially some blogs saved', () => {
 
       const response = await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(201)
         .expect('Content-Type', /application\/json/)
@@ -88,7 +102,11 @@ describe('when there are initially some blogs saved', () => {
         likes: 5,
       }
 
-      await api.post('/api/blogs').send(newBlog).expect(400)
+      await api
+        .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
+        .send(newBlog)
+        .expect(400)
 
       // Invalid create must not change persisted blog count.
       const blogsAtEnd = await helper.blogsInDb()
@@ -102,7 +120,26 @@ describe('when there are initially some blogs saved', () => {
         likes: 3,
       }
 
-      await api.post('/api/blogs').send(newBlog).expect(400)
+      await api
+        .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
+        .send(newBlog)
+        .expect(400)
+
+      // Invalid create must not change persisted blog count.
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+    })
+
+    test('fails with status code 401 if token is missing', async () => {
+      const newBlog = {
+        title: 'Missing token blog',
+        author: 'Auth Tester',
+        url: 'https://example.com/missing-token',
+        likes: 1,
+      }
+
+      await api.post('/api/blogs').send(newBlog).expect(401)
 
       // Invalid create must not change persisted blog count.
       const blogsAtEnd = await helper.blogsInDb()
@@ -179,6 +216,7 @@ describe('when there are initially some blogs saved', () => {
 
 describe('when there is initially one user in db', () => {
   beforeEach(async () => {
+    await Blog.deleteMany({})
     await User.deleteMany({})
 
     // Seed one known user so create/list operations can be validated.

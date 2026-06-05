@@ -1,8 +1,10 @@
 
 // Import Express router, Blog model, and User model
 const blogsRouter = require('express').Router()
+const jwt = require('jsonwebtoken')
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const config = require('../utils/config')
 
 
 // GET endpoint to fetch all blogs
@@ -20,8 +22,20 @@ blogsRouter.get('/', async (request, response, next) => {
 // POST endpoint to add a new blog
 blogsRouter.post('/', async (request, response, next) => {
   try {
-    // Assign the first available user as creator until auth is implemented.
-    const user = await User.findOne({})
+    if (!request.token) {
+      return response.status(401).json({ error: 'token missing or invalid' })
+    }
+
+    const decodedToken = jwt.verify(request.token, config.SECRET)
+    if (!decodedToken.id) {
+      return response.status(401).json({ error: 'token missing or invalid' })
+    }
+
+    // Assign blog creator from authenticated token user.
+    const user = await User.findById(decodedToken.id)
+    if (!user) {
+      return response.status(401).json({ error: 'token missing or invalid' })
+    }
 
     // Build a model instance so schema defaults and validation are applied.
     const blog = new Blog({ ...request.body, user: user._id })
