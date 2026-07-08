@@ -218,3 +218,36 @@ Authorization: Bearer YOUR_TOKEN_HERE
   "url": "https://example.com",
   "likes": 1
 }
+
+### Create a user
+POST http://localhost:3003/api/users
+Content-Type: application/json
+
+{
+  "username": "developer",
+  "name": "Philemon",
+  "password": "kase133246557"
+}
+
+### Step 2: Log in with the exact username you just created
+POST http://localhost:3003/api/login
+Content-Type: application/json
+
+{
+  "username": "developer",
+  "password": "kase133246557"
+}
+
+###
+
+### Step 3: Paste the token from Step 2 below and send it!
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRldmVsb3BlciIsImlkIjoiNmE0ZWQyMTI5ZDYyNGIzZjJkNDVkNDAwIiwiaWF0IjoxNzgzNTUwNTk1fQ.1lOdh8YZ2fJhy8a2kxxp3KITvzYP7999B_XhYtpNjLI
+
+{
+  "title": "Things I Don't Know as of 2018",
+  "author": "Dan Abramov",
+  "url": "https://overreacted.io",
+  "likes": 5
+}
