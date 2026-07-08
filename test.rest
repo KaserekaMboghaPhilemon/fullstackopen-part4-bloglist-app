@@ -243,7 +243,7 @@ Content-Type: application/json
 ### Step 3: Paste the token from Step 2 below and send it!
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRldmVsb3BlciIsImlkIjoiNmE0ZWQyMTI5ZDYyNGIzZjJkNDVkNDAwIiwiaWF0IjoxNzgzNTUwNTk1fQ.1lOdh8YZ2fJhy8a2kxxp3KITvzYP7999B_XhYtpNjLI
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImRldmVsb3BlciIsImlkIjoiNmE0ZWRiY2IyMjFjNTI5NmUyMDVlNDgwIiwiaWF0IjoxNzgzNTUzNTY2fQ.QniZBRtHUB9yIeBAfYbDNEiZzxRDZMLTHA8bxhM8buM
 
 {
   "title": "Things I Don't Know as of 2018",
