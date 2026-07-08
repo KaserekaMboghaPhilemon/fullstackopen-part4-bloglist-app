@@ -12,8 +12,8 @@
  * @returns {number} Always returns 1
  */
 const dummy = (blogs) => {
-  return 1
-}
+  return 1;
+};
 
 /**
  * Calculates the total number of likes for a list of blogs.
@@ -24,83 +24,64 @@ const dummy = (blogs) => {
  */
 const totalLikes = (blogs) => {
   // The reduce method goes through each blog and adds up the likes
-  return blogs.reduce((sum, blog) => sum + (blog.likes || 0), 0)
-}
+  return blogs.reduce((sum, blog) => sum + (blog.likes || 0), 0);
+};
 
-/**
- * Finds the blog with the highest number of likes.
- * Returns only title, author, and likes.
- *
- * @param {Array} blogs - An array of blog objects
- * @returns {Object|null} The favorite blog summary or null for an empty list
- */
 const favoriteBlog = (blogs) => {
   if (blogs.length === 0) {
-    return null
+    return null;
   }
 
   const favorite = blogs.reduce((best, current) => {
-    return current.likes > best.likes ? current : best
-  })
+    return current.likes > best.likes ? current : best;
+  });
 
   return {
     title: favorite.title,
     author: favorite.author,
     likes: favorite.likes,
-  }
-}
+  };
+};
 
-/**
- * Finds the author with the highest number of blogs.
- *
- * @param {Array} blogs - An array of blog objects
- * @returns {Object|null} Author and blog count, or null for an empty list
- */
 const mostBlogs = (blogs) => {
   if (blogs.length === 0) {
-    return null
+    return null;
   }
 
   const counts = blogs.reduce((acc, blog) => {
-    acc[blog.author] = (acc[blog.author] || 0) + 1
-    return acc
-  }, {})
+    acc[blog.author] = (acc[blog.author] || 0) + 1;
+    return acc;
+  }, {});
 
   const topAuthor = Object.entries(counts).reduce((best, current) => {
-    return current[1] > best[1] ? current : best
-  })
+    return current[1] > best[1] ? current : best;
+  });
 
   return {
     author: topAuthor[0],
     blogs: topAuthor[1],
-  }
-}
+  };
+};
 
-/**
- * Finds the author whose blogs have the highest total likes.
- *
- * @param {Array} blogs - An array of blog objects
- * @returns {Object|null} Author and like total, or null for an empty list
- */
 const mostLikes = (blogs) => {
   if (blogs.length === 0) {
-    return null
+    return null;
   }
 
   const likesByAuthor = blogs.reduce((acc, blog) => {
-    acc[blog.author] = (acc[blog.author] || 0) + (blog.likes || 0)
-    return acc
-  }, {})
+    acc[blog.author] = (acc[blog.author] || 0) + (blog.likes || 0);
+    return acc;
+  }, {});
 
   const topAuthor = Object.entries(likesByAuthor).reduce((best, current) => {
-    return current[1] > best[1] ? current : best
-  })
+    return current[1] > best[1] ? current : best;
+  });
 
   return {
     author: topAuthor[0],
     likes: topAuthor[1],
-  }
-}
+  };
+};
 
 // Export all helper functions from this file
 module.exports = {
@@ -109,4 +90,4 @@ module.exports = {
   favoriteBlog,
   mostBlogs,
   mostLikes,
-}
+};
